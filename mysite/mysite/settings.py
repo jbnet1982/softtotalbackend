@@ -1,4 +1,6 @@
 # mysite/settings.py
+ROOT_URLCONF = 'mysite.urls'
+AUTH_USER_MODEL = 'accounts.CustomUser'
 SECRET_KEY = 'django-insecure-2!*@3c_2!7g@!f$+=-@r&+)z_t+%yr&6@z@1!_3o^n#+uglmh%'
 STATIC_URL = '/static/'
 DEBUG = True
@@ -11,13 +13,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-
-    # Terceros
     'rest_framework',
     'rest_framework_simplejwt',
-
-    # Tu app
-    'accounts',  # o el nombre de tu app
+    'rest_framework.authtoken',
+     'accounts',
 ]
 
 
@@ -48,19 +47,28 @@ TEMPLATES = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # <-- debe ir primero
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',  # ← requerida
-    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',  # ← requerida
-    'django.contrib.messages.middleware.MessageMiddleware',  # ← requerida
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 REST_FRAMEWORK = {

@@ -1,30 +1,39 @@
-# accounts/views.py
-from rest_framework import generics, permissions, status
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.contrib.auth.models import User
-from .serializers import RegisterSerializer, ChangePasswordSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import status
+from .serializers import CustomUserSerializer  # ← muy importante
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token # si usas tokens
+from accounts.models import CustomUser 
 
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
+class RegisterUserView(APIView):
+    def post(self, request):
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Usuario creado exitosamente'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class LoginView(TokenObtainPairView):
-    # hereda lógica de obtención de JWT
-    pass
+class LoginView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        print(password)
+        print(username)
 
-class ChangePasswordView(generics.UpdateAPIView):
-    serializer_class = ChangePasswordSerializer
-    model = User
-    permission_classes = [permissions.IsAuthenticated]
-    def get_object(self):
-        return self.request.user
-    def update(self, request, *args, **kwargs):
-        user = self.get_object()
-        ser = self.get_serializer(data=request.data)
-        ser.is_valid(raise_exception=True)
-        if not user.check_password(ser.validated_data['old_password']):
-            return Response({'old_password':'Wrong password.'}, status=status.HTTP_400_BAD_REQUEST)
-        user.set_password(ser.validated_data['new_password'])
-        user.save()
-        return Response({'detail':'Password updated.'})
+        user = authenticate(username=username, password=password)
+        print(user)
+        if user:
+            
+            token, _ = Token.objects.get_or_create(user=user)
+            print(user.username)
+            print(user.email)
+
+            return Response({
+                'token': token.key,
+                'username': user.username,
+                'email': user.email
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
